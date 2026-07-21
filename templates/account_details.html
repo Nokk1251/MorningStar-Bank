@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Account{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+  <div>
+    <h1 class="mb-1">Account</h1>
+    <div class="muted">{{ account["owner"] }} • {{ account["iban"] }}</div>
+  </div>
+
+  <div class="text-end">
+    <div class="h4 mb-0">{{ "%.2f"|format(account["balance"]) }} {{ account["currency"] }}</div>
+    <div class="muted small">Overdraft limit: {{ "%.2f"|format(account["overdraft_limit"]) }}</div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="cardx p-3 mb-3">
+      <h5 class="mb-2">Deposit</h5>
+      <form method="post" action="{{ url_for('deposit_post', account_id=account['account_id']) }}">
+        <input class="form-control mb-2" name="amount" type="number" step="0.01" min="0.01" required>
+        <button class="btn btn-warning w-100" type="submit">Deposit</button>
+      </form>
+    </div>
+
+    <div class="cardx p-3 mb-3">
+      <h5 class="mb-2">Withdraw</h5>
+      <form method="post" action="{{ url_for('withdraw_post', account_id=account['account_id']) }}">
+        <input class="form-control mb-2" name="amount" type="number" step="0.01" min="0.01" required>
+        <button class="btn btn-warning w-100" type="submit">Withdraw</button>
+      </form>
+    </div>
+
+    <div class="cardx p-3">
+      <h5 class="mb-2">Transfer</h5>
+      <form method="post" action="{{ url_for('transfer_post', account_id=account['account_id']) }}">
+        <label class="form-label">Amount ({{ account["currency"] }})</label>
+        <input class="form-control mb-2" name="amount" type="number" step="0.01" min="0.01" required>
+
+        <label class="form-label">To account</label>
+        <select class="form-select mb-2" name="to_account_id">
+          <option value="">Select account</option>
+          {% for t in transfer_targets %}
+            <option value="{{ t['account_id'] }}">{{ t['iban'] }} ({{ t['currency'] }})</option>
+          {% endfor %}
+        </select>
+
+        <div class="muted small mb-2">Or transfer by IBAN:</div>
+        <input class="form-control mb-3" name="to_iban" placeholder="Destination IBAN">
+
+        <button class="btn btn-warning w-100" type="submit">Transfer</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="cardx p-3 mb-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="mb-0">Transactions</h5>
+      </div>
+
+      {% if transactions and transactions|length > 0 %}
+        <div class="table-responsive">
+          <table class="table table-dark table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th class="text-end">Amount</th>
+                <th class="text-end">Balance after</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for t in transactions %}
+                <tr>
+                  <td class="muted">{{ t["created_at"] }}</td>
+                  <td>{{ t["t_type"] }}</td>
+                  <td class="text-end">{{ "%.2f"|format(t["amount"]) }}</td>
+                  <td class="text-end">{{ "%.2f"|format(t["balance_after"]) }}</td>
+                  <td class="muted">{{ t["details"] or "" }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="muted">No transactions.</div>
+      {% endif %}
+    </div>
+
+    {% if fx_rates and fx_rates|length > 0 %}
+      <div class="cardx p-3">
+        <h5 class="mb-2">FX Rates (per EUR)</h5>
+        <div class="row g-2">
+          {% for r in fx_rates %}
+            <div class="col-md-4">
+              <div class="fxcard">
+                <div class="fw-bold">{{ r["currency"] }}</div>
+                <div class="muted">{{ "%.5f"|format(r["per_eur"]) }}</div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

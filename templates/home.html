@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="cardx p-4 p-lg-5">
+  <div class="row align-items-center g-4">
+    <div class="col-lg-7">
+      <h1 class="display-6 mb-3">MorningStar Bank Demo</h1>
+      <p class="muted mb-4">
+        Demo app for accounts, transactions, savings goals, bills and FX transfers.
+        No real money, everything here is for educational purposes only.
+      </p>
+
+      <div class="d-flex gap-2 flex-wrap">
+        {% if not session.get("user_id") %}
+          <a class="btn btn-warning" href="{{ url_for('register_get') }}">Create account</a>
+          <a class="btn btn-outline-warning" href="{{ url_for('login_get') }}">Login</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="col-lg-5 text-center">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" class="home-logo" alt="logo">
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mt-3">
+  <div class="col-md-6 col-lg-3">
+    <div class="cardx p-3 h-100">
+      <div class="fw-bold mb-1">Accounts</div>
+      <div class="muted small">Create accounts, deposit/withdraw, view history.</div>
+    </div>
+  </div>
+  <div class="col-md-6 col-lg-3">
+    <div class="cardx p-3 h-100">
+      <div class="fw-bold mb-1">Savings Goals</div>
+      <div class="muted small">Set goals, track progress, add saved amounts.</div>
+    </div>
+  </div>
+  <div class="col-md-6 col-lg-3">
+    <div class="cardx p-3 h-100">
+      <div class="fw-bold mb-1">Bills</div>
+      <div class="muted small">Add bills, mark paid/unpaid, filter by account.</div>
+    </div>
+  </div>
+  <div class="col-md-6 col-lg-3">
+    <div class="cardx p-3 h-100">
+      <div class="fw-bold mb-1">FX Transfers</div>
+      <div class="muted small">Transfer between accounts in different currencies.</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

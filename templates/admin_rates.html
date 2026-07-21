@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}FX Rates{% endblock %}
+
+{% block content %}
+<h1 class="mb-3">Admin: FX Rates</h1>
+
+<div class="cardx p-3 mb-3">
+  <form method="post" action="{{ url_for('admin_rates_post') }}" class="row g-2">
+    {% for c in currencies %}
+      <div class="col-md-4">
+        <label class="form-label">{{ c }} per EUR</label>
+        <input class="form-control" name="rate_{{ c }}" type="number" step="0.00001" min="0.00001" required>
+      </div>
+    {% endfor %}
+    <div class="col-12">
+      <button class="btn btn-warning" type="submit">Save rates</button>
+    </div>
+  </form>
+</div>
+
+<div class="cardx p-3">
+  <h5 class="mb-2">Current rates</h5>
+
+  {% if rates and rates|length > 0 %}
+    <div class="table-responsive">
+      <table class="table table-dark table-sm align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Currency</th>
+            <th class="text-end">per EUR</th>
+            <th>Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rates %}
+            <tr>
+              <td class="fw-bold">{{ r["currency"] }}</td>
+              <td class="text-end">{{ "%.5f"|format(r["per_eur"]) }}</td>
+              <td class="muted">{{ r["updated_at"] }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="muted">No rates.</div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Bills{% endblock %}
+
+{% block content %}
+<h1 class="mb-3">Bills</h1>
+
+<div class="cardx p-3 mb-3">
+  <h5 class="mb-3">Add bill</h5>
+  <form method="post" action="{{ url_for('bills_add') }}">
+    <label class="form-label">Account</label>
+    <select class="form-select mb-2" name="account_id" required data-selected="{{ selected_account_id or '' }}">
+      <option value="">Select account</option>
+      {% for a in accounts %}
+        <option value="{{ a['account_id'] }}">{{ a['iban'] }} — {{ a['owner'] }} ({{ a['currency'] }})</option>
+      {% endfor %}
+    </select>
+
+    <label class="form-label">Title</label>
+    <input class="form-control mb-2" name="title" required>
+
+    <label class="form-label">Amount</label>
+    <input class="form-control mb-2" type="number" name="amount" step="0.01" min="0.01" required>
+
+    <label class="form-label">Due date (optional)</label>
+    <input class="form-control mb-3" type="date" name="due_date">
+
+    <button class="btn btn-warning" type="submit">Add</button>
+  </form>
+</div>
+
+<div class="cardx p-3">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h5 class="mb-0">All bills</h5>
+
+    <form method="get" action="{{ url_for('bills_get') }}" class="d-flex gap-2">
+      <select class="form-select form-select-sm" name="account_id" data-selected="{{ selected_account_id or '' }}">
+        <option value="">All accounts</option>
+        {% for a in accounts %}
+          <option value="{{ a['account_id'] }}">{{ a['owner'] }} ({{ a['currency'] }})</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-sm btn-outline-warning" type="submit">Filter</button>
+    </form>
+  </div>
+
+  {% if bills and bills|length > 0 %}
+    {% for b in bills %}
+      <div class="billx {% if b['is_paid'] %}paid{% endif %}">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <strong>{{ b["title"] }}</strong>
+            <div class="muted">
+              {{ b["iban"] }} — {{ b["owner"] }} ({{ b["currency"] }})
+              {% if b["due_date"] %} • due: {{ b["due_date"] }}{% endif %}
+            </div>
+          </div>
+          <div class="text-end">
+            <div><strong>{{ "%.2f"|format(b["amount"]) }} {{ b["currency"] }}</strong></div>
+            <div class="muted">{% if b["is_paid"] %}paid{% else %}not paid{% endif %}</div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-2">
+          {% if not b["is_paid"] %}
+            <form method="post" action="{{ url_for('bills_pay', bill_id=b['id']) }}">
+              <button class="btn btn-warning btn-sm" type="submit">Pay</button>
+            </form>
+          {% else %}
+            <form method="post" action="{{ url_for('bills_refund', bill_id=b['id']) }}">
+              <button class="btn btn-outline-warning btn-sm" type="submit">Refund</button>
+            </form>
+          {% endif %}
+
+          <form method="post" action="{{ url_for('bills_delete', bill_id=b['id']) }}">
+            <button class="btn btn-outline-warning btn-sm" type="submit">Delete</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="muted">No bills yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

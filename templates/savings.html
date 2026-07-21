@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Savings{% endblock %}
+
+{% block content %}
+<h1 class="mb-3">Savings Goals</h1>
+
+<div class="cardx p-3 mb-3">
+  <h5 class="mb-3">Create goal</h5>
+
+  <form method="post" action="{{ url_for('savings_add') }}">
+    <label class="form-label">Account</label>
+    <select class="form-select mb-2" name="account_id" required data-selected="{{ selected_account_id or '' }}">
+      <option value="">Select account</option>
+      {% for a in accounts %}
+        <option value="{{ a['account_id'] }}">{{ a['iban'] }} — {{ a['owner'] }} ({{ a['currency'] }})</option>
+      {% endfor %}
+    </select>
+
+    <label class="form-label">Title</label>
+    <input class="form-control mb-2" name="title" required>
+
+    <label class="form-label">Target amount</label>
+    <input class="form-control mb-2" type="number" name="target_amount" step="0.01" min="0.01" required>
+
+    <label class="form-label">Deadline (optional)</label>
+    <input class="form-control mb-3" type="date" name="deadline">
+
+    <button class="btn btn-warning" type="submit">Create</button>
+  </form>
+</div>
+
+<div class="cardx p-3">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h5 class="mb-0">All goals</h5>
+
+    <form method="get" action="{{ url_for('savings_get') }}" class="d-flex gap-2">
+      <select class="form-select form-select-sm" name="account_id" data-selected="{{ selected_account_id or '' }}">
+        <option value="">All accounts</option>
+        {% for a in accounts %}
+          <option value="{{ a['account_id'] }}">{{ a['owner'] }} ({{ a['currency'] }})</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-sm btn-outline-warning" type="submit">Filter</button>
+    </form>
+  </div>
+
+  {% if goals and goals|length > 0 %}
+    {% for g in goals %}
+      <div class="goalx {% if g['is_done'] %}done{% endif %}">
+        <div class="d-flex justify-content-between align-items-start gap-3">
+          <div>
+            <div class="fw-bold">{{ g["title"] }}</div>
+            <div class="muted">
+              {{ g["iban"] }} — {{ g["owner"] }} ({{ g["currency"] }})
+              {% if g["deadline"] %} • deadline: {{ g["deadline"] }}{% endif %}
+            </div>
+          </div>
+
+          <div class="text-end">
+            <div class="fw-bold">
+              {{ "%.2f"|format(g["saved_amount"]) }} / {{ "%.2f"|format(g["target_amount"]) }} {{ g["currency"] }}
+            </div>
+            <div class="muted small">
+              {% if g["is_done"] %}completed{% else %}{{ g["pct"] }}%{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="progressx mt-2">
+          <div class="barx" data-pct="{{ g['pct'] }}"></div>
+        </div>
+
+        <div class="d-flex gap-2 mt-2 flex-wrap align-items-center">
+          {% if not g["is_done"] %}
+            <form method="post" action="{{ url_for('savings_add_amount', goal_id=g['id']) }}" class="d-flex gap-2">
+              <input class="form-control form-control-sm"
+                     name="amount" type="number" step="0.01" min="0.01"
+                     placeholder="Add amount" required>
+              <button class="btn btn-warning btn-sm" type="submit">Add</button>
+            </form>
+          {% else %}
+            <div class="badge text-bg-warning">Goal completed</div>
+          {% endif %}
+
+          {% if g["saved_amount"]|float > 0 %}
+            <form method="post" action="{{ url_for('savings_withdraw_amount', goal_id=g['id']) }}" class="d-flex gap-2">
+              <input class="form-control form-control-sm"
+                     name="amount" type="number" step="0.01" min="0.01"
+                     placeholder="Withdraw amount" required>
+              <button class="btn btn-outline-warning btn-sm" type="submit">Withdraw</button>
+            </form>
+
+            <form method="post" action="{{ url_for('savings_withdraw_amount', goal_id=g['id']) }}">
+              <input type="hidden" name="amount" value="{{ '%.2f'|format(g['saved_amount']|float) }}">
+              <button class="btn btn-outline-warning btn-sm" type="submit">Withdraw all</button>
+            </form>
+          {% endif %}
+
+          <form method="post" action="{{ url_for('savings_delete', goal_id=g['id']) }}">
+            <button class="btn btn-outline-warning btn-sm" type="submit">Delete</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="muted">No goals yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

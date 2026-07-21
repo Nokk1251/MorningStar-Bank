@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Admin Users{% endblock %}
+
+{% block content %}
+<h1 class="mb-3">Admin: Users</h1>
+
+<div class="cardx p-3">
+  {% if users and users|length > 0 %}
+    {% for u in users %}
+      <div class="userx">
+        <form method="post" action="{{ url_for('admin_users_edit', user_id=u['id']) }}" class="row g-2 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label">Username</label>
+            <input class="form-control" name="username" value="{{ u['username'] }}" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Admin</label>
+            <select class="form-select" name="is_admin" data-selected="{{ u['is_admin'] }}">
+              <option value="0">No</option>
+              <option value="1">Yes</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">New password (optional)</label>
+            <input class="form-control" name="new_password" type="password">
+          </div>
+          <div class="col-md-2 d-flex gap-2">
+            <button class="btn btn-warning w-100" type="submit">Save</button>
+          </div>
+        </form>
+
+        <form method="post" action="{{ url_for('admin_users_delete', user_id=u['id']) }}" class="mt-2">
+          <button class="btn btn-outline-warning btn-sm" type="submit">Delete user</button>
+        </form>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="muted">No users.</div>
+  {% endif %}
+</div>
+{% endblock %}
